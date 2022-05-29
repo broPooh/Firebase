@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import AppTrackingTransparency
+import FirebaseAnalytics
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -26,9 +28,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
     }
 
+    //iOS 15부터 프롬프트를 띄울때, 앱이 액티브인 상황에서 띄우라고 변경이 되었기 때문에
+    // 앱이 액티브가 된 상황에서 띄우도록 작성을 해주어야 한다.
+    // 그리고 가이드라인에서 앱 추적에 대해서 체크를 할 때에는 액티브가 되고 +1 초후에 띄우라고 되어있기때문에 그러한 부분도 추가를 해주었다.
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            //AppTrackingTransparency를 통해서 앱 사용간 추적 허용받기
+            //ATT Framework -> iOS 14이상이라 그 이전까지 지원을 하는 경우에는 분기처리가 필요하다.
+            //Analytics사용하기 전 사용자에게 허용받기
+            ATTrackingManager.requestTrackingAuthorization { status in
+                switch status {
+                    
+                case .notDetermined:
+                    //프롬포트가 떠있는 상태
+                    print("notDetermined")
+                    Analytics.setAnalyticsCollectionEnabled(false)
+                case .restricted:
+                    // 거절한 상태
+                    print("restricted")
+                    Analytics.setAnalyticsCollectionEnabled(false)
+                case .denied:
+                    // 거부한 상태
+                    print("denied")
+                    Analytics.setAnalyticsCollectionEnabled(false)
+                case .authorized:
+                    //허용이 된 상태
+                    //허용을 했을때만 애널리틱스를 수집할 수 잇다.
+                    print("authorized")
+                    Analytics.setAnalyticsCollectionEnabled(true)
+                @unknown default:
+                    print("unknown")
+                    Analytics.setAnalyticsCollectionEnabled(false)
+                }
+            }
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {

@@ -6,14 +6,39 @@
 //
 
 import UIKit
+import FirebaseCore
+import FirebaseAnalytics
+import FirebaseCrashlytics
+import AppTrackingTransparency
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-
+    
+    var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        //Firebase 초기화, 공유 인스턴스 생성
+        FirebaseApp.configure()
+        
+        Crashlytics.crashlytics().setCustomValue(1000, forKey: "movieCount")
+        Crashlytics.crashlytics().setCustomValue("jack", forKey: "nickName")
+
+        //영화 드라마 직접등록
+        let keysAndValues = [
+                         "string key" : "string value",
+                         "string key 2" : "string value 2",
+                         "boolean key" : true,
+                         "boolean key 2" : false,
+                         "float key" : 1.01,
+                         "float key 2" : 2.02
+                        ] as [String : Any]
+
+        Crashlytics.crashlytics().setCustomKeysAndValues(keysAndValues)
+        
+        Crashlytics.crashlytics().setUserID("123456789")
+
         return true
     }
 
